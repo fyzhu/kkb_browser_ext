@@ -14,24 +14,44 @@ document.addEventListener("DOMContentLoaded", async function () {
   pointId = pointList.find((item) => name.includes(item.name)).pointId;
   let res = await getTaskId(userId, pointId);
   taskId = res[0].taskId;
-  let tips = insertTips();
-
+  let tips = insertTips(
+    "kkb_tool",
+    "position: fixed; left: 0; top: 65px; z-index: 9999; background: rgba(0,0,0,0.5);color: white; padding: 10px; margin: 10px;"
+  );
+  let videoTips = insertTips(
+    "kkb_video",
+    "position: fixed; right: 0; top: 65px; z-index: 9999; background: rgba(0,0,0,0.5);color: white; padding: 10px; margin: 10px;"
+  );
+  const video = document.querySelector("video");
+  video.addEventListener("loadeddata", () => {
+    setInterval(() => {
+      const currentTime = formatTime(video.currentTime);
+      const duration = formatTime(video.duration);
+      videoTips.innerHTML = `${currentTime} / ${duration}`;
+    }, 1000);
+  });
   let t = setInterval(getProgress, 60 * 1000, userId, taskId, tips);
   let progress = await getProgress(userId, taskId, tips);
   if (progress[0] == "已完成") {
-    console.log('本课已完成');
-    tips.innerHTML = '已完成'
+    console.log("本课已完成");
+    tips.innerHTML = "已完成";
     clearInterval(t);
   } else {
     tips.innerHTML = progress.map((item) => `<p>${item}</p>`).join("");
   }
 });
-
-function insertTips() {
+function formatTime(seconds) {
+  return `${parseInt(seconds / 60 / 60)}:${addZero(
+    parseInt((seconds / 60) % 60)
+  )}:${addZero(parseInt(seconds % 60))}`;
+}
+function addZero(num) {
+  return num > 9 ? num : "0" + num;
+}
+function insertTips(id, style) {
   let div = document.createElement("div");
-  div.id = "kkb_tool";
-  div.style.cssText =
-    "position: fixed; left: 0; top: 65px; z-index: 9999; background: rgba(0,0,0,0.5);color: white; padding: 10px; margin: 10px;";
+  div.id = id;
+  div.style.cssText = style;
   document.body.appendChild(div);
   return div;
 }
@@ -45,7 +65,7 @@ async function getProgress(userId, taskId, tips) {
   let res = await request(
     `${hostPrefix}/task-result?userId=${userId}&taskId=${taskId}`
   );
-  return res.split("；")
+  return res.split("；");
 }
 async function getPointList(userId, courseId) {
   let pageSize = 100,
