@@ -1,4 +1,5 @@
 let hostPrefix = "https://xiaoke.kaikeba.com/api/checkin/student";
+let t;
 
 document.addEventListener("DOMContentLoaded", async function () {
   //  courseId + userId => pointId list + userId=> taskId 38640734699419693 + userId => 进度
@@ -22,23 +23,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     "kkb_video",
     "position: fixed; right: 0; top: 65px; z-index: 9999; background: rgba(0,0,0,0.5);color: white; padding: 10px; margin: 10px;"
   );
-  const video = document.querySelector("video");
-  video.addEventListener("loadeddata", () => {
-    setInterval(() => {
-      const currentTime = formatTime(video.currentTime);
-      const duration = formatTime(video.duration);
-      videoTips.innerHTML = `${currentTime} / ${duration}`;
-    }, 1000);
-  });
-  let t = setInterval(getProgress, 60 * 1000, userId, taskId, tips);
-  let progress = await getProgress(userId, taskId, tips);
-  if (progress[0] == "已完成") {
-    console.log("本课已完成");
-    tips.innerHTML = "已完成";
-    clearInterval(t);
-  } else {
-    tips.innerHTML = progress.map((item) => `<p>${item}</p>`).join("");
-  }
+  let video = document.querySelector("video");
+  let t1 = setInterval(() => {
+    if (video) {
+      clearInterval(t1);
+      // video.addEventListener("loadeddata", () => {
+      setInterval(() => {
+        const currentTime = formatTime(video.currentTime);
+        const left = formatTime(video.duration - video.currentTime);
+        videoTips.innerHTML = `${currentTime} / ${left}`;
+      }, 500);
+      // });
+    } else {
+      video = document.querySelector("video");
+    }
+  }, 1000);
+  t = setInterval(updateProgress, 60 * 1000, userId, taskId, tips);
+  updateProgress(userId, taskId, tips);
 });
 function formatTime(seconds) {
   return `${parseInt(seconds / 60 / 60)}:${addZero(
@@ -61,8 +62,18 @@ async function getName(content_id) {
     `https://weblearn.kaikeba.com/student/course/content?content_id=${content_id}`
   );
 }
-async function getProgress(userId, taskId, tips) {
-  let res = await request(
+async function updateProgress(userId, taskId, tips) {
+  let progress = await getProgress(userId, taskId);
+  if (progress[0] == "已完成") {
+    console.log("本课已完成");
+    tips.innerHTML = "已完成";
+    clearInterval(t);
+  } else {
+    tips.innerHTML = progress.map((item) => `<p>${item}</p>`).join("");
+  }
+}
+async function getProgress(userId, taskId) {
+  const res = await request(
     `${hostPrefix}/task-result?userId=${userId}&taskId=${taskId}`
   );
   return res.split("；");
