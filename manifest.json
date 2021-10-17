@@ -1,0 +1,73 @@
+{
+  "manifest_version": 2,
+  "name": "开课吧",
+  "version": "1.0.0",
+  "description": "简单的Chrome扩展",
+  "icons": {
+    "16": "img/icon.png",
+    "48": "img/icon.png",
+    "128": "img/icon.png"
+  },
+  "background": {
+    // "page": "background.html"
+    "scripts": ["js/background.js"]
+  },
+  // "browser_action": {
+  //   "default_icon": "img/test.jpg",
+  //   "default_title": "开课吧插件",
+  //   "default_popup": "popup.html"
+  // },
+  // 当某些特定页面打开才显示的图标
+  "page_action":
+	{
+		"default_icon": "img/icon.png",
+		"default_title": "我是pageAction",
+		"default_popup": "popup.html"
+	},
+  // 需要直接注入页面的JS
+  "content_scripts": [
+    {
+      "matches": ["https://learn.kaikeba.com/home/*"],
+      "js": ["js/home.js"],
+      // "css": ["css/custom.css"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://learn.kaikeba.com/catalog/*"],
+      "js": ["js/catalog.js"],
+      // "css": ["css/custom.css"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://learn.kaikeba.com/video/*"],
+      "js": ["js/video.js"],
+      // "css": ["css/custom.css"],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": [
+    "declarativeContent",
+    "cookies",
+    "contextMenus", // 右键菜单
+    "tabs", // 标签
+    "notifications", // 通知
+    "webRequest", // web请求
+    "webRequestBlocking",
+    "storage", // 插件本地存储
+    "http://*/*", // 可以通过executeScript或者insertCSS访问的网站
+    "https://*/*" // 可以通过executeScript或者insertCSS访问的网站
+  ],
+  // "web_accessible_resources": ["js/inject.js"],
+  "homepage_url": "https://www.jinga.vip",
+  // "chrome_url_overrides": {
+  //   "newtab": "newtab.html"
+  // },
+  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+  "omnibox": { "keyword": "go" },
+  // "default_locale": "zh_CN",
+  "devtools_page": "devtools.html"
+}
