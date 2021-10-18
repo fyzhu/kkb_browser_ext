@@ -1,6 +1,6 @@
 # 开课吧浏览器扩展
 
-## 1.是否完成课程
+## 1.是否完成课程打卡任务
 ### 已完成
 ![image](https://user-images.githubusercontent.com/5175751/137658341-6902b0ec-6490-4f39-931e-3cdaa9653c73.png)
 ### 进行中
