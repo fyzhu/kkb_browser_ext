@@ -10,7 +10,7 @@
 ![image](https://user-images.githubusercontent.com/5175751/137658422-2b8809ce-c9ff-4861-adc9-52c71d92b90c.png)
 
 ## todo
-
-- [ ] 弹幕
+- [ ] 点击课程链接新开标签打开页面（__blank)
 - [ ] 问答
-- [ ] 新开标签打开页面
+- [ ] 讨论
+- [ ] 弹幕
