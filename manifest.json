@@ -27,15 +27,18 @@
   // 需要直接注入页面的JS
   "content_scripts": [
     {
+      "matches": ["https://learn.kaikeba.com/*"],
+      "js": ["js/learn.js"],
+      "run_at": "document_start"
+    },
+    {
       "matches": ["https://learn.kaikeba.com/home/*"],
       "js": ["js/home.js"],
-      // "css": ["css/custom.css"],
       "run_at": "document_start"
     },
     {
       "matches": ["https://learn.kaikeba.com/catalog/*"],
       "js": ["js/catalog.js"],
-      // "css": ["css/custom.css"],
       "run_at": "document_start"
     },
     {
