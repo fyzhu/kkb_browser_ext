@@ -14,10 +14,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   // courseId 220931 catalog 页 => sectionId => content_id 483238 video页 => content_title => name => pointId => taskId
   // courseInfo 课程信息
   // chapterInfo 章信息
-  // section 节信息
+  // section 节信息 打卡点 (节名和组名暂时来看相等，一节可能包含多个内容，一个内容可能包含多个视频片段)
   // group 组
   // content 内容
-  //
+  // video 视频 片段
+  // pointId 打卡点 一个打卡点可能包含多个任务 64736515743019159
+  // taskId 打卡任务 44456317035769580
   /**
    * 1. 通过 content 信息查找 section_name
    * url 中拿到 content_id 510108
@@ -39,7 +41,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let userId = localStorage.getItem("uid"),
     courseInfo = JSON.parse(localStorage.getItem("courseInfo")),
-    pointId = "",
     taskId = "";
   let courseId = courseInfo.course_id;
   let {
@@ -49,9 +50,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   const { section_name } = courseInfo.chapter_list
     .find((item) => item.chapter_id == chapter_id)
     ?.section_list.find((item) => item.section_id == section_id);
-  console.log("课程信息", chapter_id, section_name);
   let { result: pointList } = await getPointList(userId, courseId);
-  pointId = pointList.find((item) => section_name.includes(item.name))?.pointId;
+  console.log("打卡点列表和节名称", pointList, section_name);
+  const pointId = pointList.find((item) => trim(section_name) == trim(item.name))?.pointId;
   if (!pointId) {
     console.log("非打卡课程");
     return;
@@ -84,6 +85,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   t = setInterval(updateProgress, 60 * 1000, userId, taskId, tips);
   updateProgress(userId, taskId, tips);
 });
+function trim(str) {
+  return encodeURI(str).replaceAll('%C2%A0','').replaceAll('%20','')
+}
 function formatTime(seconds) {
   return `${parseInt(seconds / 60 / 60)}:${addZero(
     parseInt((seconds / 60) % 60)
