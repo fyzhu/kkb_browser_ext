@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   )?.taskId;
 
   if (!taskId) {
-    console.log("非打卡课程，请用户选择");
+    console.log("非打卡课程 或 课程已打卡");
     return;
   }
   // 如果是打卡课程并且未完成打卡
