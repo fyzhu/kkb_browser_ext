@@ -1,5 +1,5 @@
 let hostPrefix = "https://xiaoke.kaikeba.com/api/checkin/student";
-let t;
+let t, t2, flag = [];
 window.addEventListener("popstate", () => {
   console.log("popstate change");
 });
@@ -19,9 +19,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   // content 内容
   // video 视频 片段
   // pointId 打卡点 一个打卡点可能包含多个任务 64736515743019159
-  // taskId 打卡任务 44456317035769580
+  // taskId 打卡任务 44456317035769580 任务有进度
   /**
-   * 1. 通过 content 信息查找 section_name
+   * 1. 通过 content 信息查找 section_name (节name)
    * url 中拿到 content_id 510108
    * 通过 content 接口拿到 content 信息中的 chapter_id 229120  / section_id 92542
    * 通过 localstorage 拿到 courseinfo
@@ -38,34 +38,49 @@ document.addEventListener("DOMContentLoaded", async function () {
    *  name(section_name / group_name)
    * }
    **/
+
   showTime();
   let userId = localStorage.getItem("uid"),
     courseInfo = JSON.parse(localStorage.getItem("courseInfo")),
     taskId = "";
   let courseId = courseInfo.course_id;
   let {
-    chapter: { chapter_id },
-    section: { section_id },
+    // chapter: { chapter_id },
+    // section: { section_id },
+    content_title,
   } = await getContentInfo(content_id);
-  const { section_name } = courseInfo.chapter_list
-    .find((item) => item.chapter_id == chapter_id)
-    ?.section_list.find((item) => item.section_id == section_id);
+  // const { section_name } = courseInfo.chapter_list
+  //   .find((item) => item.chapter_id == chapter_id)
+  //   ?.section_list.find((item) => item.section_id == section_id);
   let { result: pointList } = await getPointList(userId, courseId);
-  console.log(
-    "打卡点列表和节名称",
-    pointList.map((item) => item.name),
-    section_name
-  );
-  const pointId = pointList.find(
-    (item) => trim(section_name) == trim(item.name)
-  )?.pointId;
+  const unFinishedPointList = pointList.filter((item) => !item.status);
 
-  if (!pointId) {
+  const taskList = [];
+  // 获取未完成任务列表
+  for (const item of unFinishedPointList) {
+    let [task] = await getTaskList(userId, item.pointId);
+    taskList.push(task);
+  }
+  console.log(
+    "未完成任务列表和内容名称",
+    taskList.map((item) => item.name),
+    content_title
+  );
+  taskId = taskList.find((item) =>
+    trim(item.name).includes(trim(content_title))
+  )?.taskId;
+
+  if (!taskId) {
     console.log("非打卡课程，请用户选择");
     return;
   }
-  let res = await getTaskId(userId, pointId);
-  taskId = res[0].taskId;
+  // 如果是打卡课程并且未完成打卡
+  t2 = setInterval(() => {
+    hack(content_id);
+  }, 5 * 1000);
+  // tasklist 里一般只有一个
+  // let res = await getTaskList(userId, pointId);
+  // taskId = res[0].taskId;
   let tips = insertTips(
     "kkb_tool",
     "position: fixed; left: 0; top: 65px; z-index: 9999; background: rgba(0,0,0,0.5);color: white; padding: 10px; margin: 10px;"
@@ -77,6 +92,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 function trim(str) {
   return encodeURI(str).replaceAll("%C2%A0", "").replaceAll("%20", "");
 }
+
 function showTime() {
   let videoTips = insertTips(
     "kkb_video",
@@ -113,12 +129,28 @@ function insertTips(id, style) {
   document.body.appendChild(div);
   return div;
 }
+async function hack(content_id) {
+  const params = {
+    content_id,
+    flag,
+    progress: 100,
+  };
+  
+  const data = await request(
+    `https://api-learn-progress.kaikeba.com/student/course/progress/live/report`,
+    "POST",
+    params
+  );
+  flag = data.flag
+  console.log('flag', flag);
+  return flag;
+}
 async function getContentInfo(content_id) {
   // return document.querySelector('.title-catalogue').innerText;
-  const { location } = await request(
+  const { location, content_title } = await request(
     `https://weblearn.kaikeba.com/student/course/content?content_id=${content_id}`
   );
-  return location;
+  return { location, content_title };
 }
 async function updateProgress(userId, taskId, tips) {
   let progress = await getProgress(userId, taskId);
@@ -126,6 +158,7 @@ async function updateProgress(userId, taskId, tips) {
     console.log("本课已完成");
     tips.innerHTML = "已完成";
     clearInterval(t);
+    clearInterval(t2);
   } else {
     tips.innerHTML = progress.map((item) => `<p>${item}</p>`).join("");
   }
@@ -143,21 +176,26 @@ async function getPointList(userId, courseId) {
     `${hostPrefix}/point-list?courseId=${courseId}&pageSize=${pageSize}&userId=${userId}&pageNum=${pageNum}`
   );
 }
-async function getTaskId(userId, pointId) {
+async function getTaskList(userId, pointId) {
   return await request(
     `${hostPrefix}/task-list?pointId=${pointId}&userId=${userId}`
   );
 }
-async function request(url, method = "get") {
+async function request(url, method = "get", data = {}) {
   let cookie = document.cookie
     .split("; ")
     .find((item) => !item.indexOf("access-edu_online"))
     .split("=")[1];
-  return await fetch(url, {
+  const params = {
     headers: {
       authorization: "Bearer pc:" + cookie,
     },
-  })
+    method,
+  };
+  if (method == "POST") {
+    params.body = JSON.stringify(data);
+  }
+  return await fetch(url, params)
     .then((res) => res.json())
     .then((res) => res.data);
 }
