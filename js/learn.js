@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async function () {
    *  name(section_name / group_name)
    * }
    **/
-
+  showTime();
   let userId = localStorage.getItem("uid"),
     courseInfo = JSON.parse(localStorage.getItem("courseInfo")),
     taskId = "";
@@ -51,10 +51,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     .find((item) => item.chapter_id == chapter_id)
     ?.section_list.find((item) => item.section_id == section_id);
   let { result: pointList } = await getPointList(userId, courseId);
-  console.log("打卡点列表和节名称", pointList, section_name);
-  const pointId = pointList.find((item) => trim(section_name) == trim(item.name))?.pointId;
+  console.log(
+    "打卡点列表和节名称",
+    pointList.map((item) => item.name),
+    section_name
+  );
+  const pointId = pointList.find(
+    (item) => trim(section_name) == trim(item.name)
+  )?.pointId;
+
   if (!pointId) {
-    console.log("非打卡课程");
+    console.log("非打卡课程，请用户选择");
     return;
   }
   let res = await getTaskId(userId, pointId);
@@ -63,6 +70,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     "kkb_tool",
     "position: fixed; left: 0; top: 65px; z-index: 9999; background: rgba(0,0,0,0.5);color: white; padding: 10px; margin: 10px;"
   );
+
+  t = setInterval(updateProgress, 60 * 1000, userId, taskId, tips);
+  updateProgress(userId, taskId, tips);
+});
+function trim(str) {
+  return encodeURI(str).replaceAll("%C2%A0", "").replaceAll("%20", "");
+}
+function showTime() {
   let videoTips = insertTips(
     "kkb_video",
     "position: fixed; right: 0; top: 65px; z-index: 9999; background: rgba(0,0,0,0.5);color: white; padding: 10px; margin: 10px;"
@@ -82,11 +97,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       video = document.querySelector("video");
     }
   }, 1000);
-  t = setInterval(updateProgress, 60 * 1000, userId, taskId, tips);
-  updateProgress(userId, taskId, tips);
-});
-function trim(str) {
-  return encodeURI(str).replaceAll('%C2%A0','').replaceAll('%20','')
 }
 function formatTime(seconds) {
   return `${parseInt(seconds / 60 / 60)}:${addZero(
