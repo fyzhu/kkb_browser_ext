@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 如果是打卡课程并且未完成打卡
   t2 = setInterval(() => {
     hack(content_id);
-  }, 5 * 1000);
+  }, 6 * 1000);
   // tasklist 里一般只有一个
   // let res = await getTaskList(userId, pointId);
   // taskId = res[0].taskId;
@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     "position: fixed; left: 0; top: 65px; z-index: 9999; background: rgba(0,0,0,0.5);color: white; padding: 10px; margin: 10px;"
   );
 
-  t = setInterval(updateProgress, 60 * 1000, userId, taskId, tips);
+  t = setInterval(updateProgress, 6 * 1000, userId, taskId, tips);
   updateProgress(userId, taskId, tips);
 });
 function trim(str) {
@@ -142,7 +142,7 @@ async function hack(content_id) {
     params
   );
   flag = data.flag
-  console.log('flag', flag);
+  // console.log('flag', flag);
   return flag;
 }
 async function getContentInfo(content_id) {
