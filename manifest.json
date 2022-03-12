@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "开课吧",
   "version": "1.0.0",
   "description": "开课吧扩展",
