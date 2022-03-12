@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   //   .find((item) => item.chapter_id == chapter_id)
   //   ?.section_list.find((item) => item.section_id == section_id);
   let { result: pointList } = await getPointList(userId, courseId);
-  const unFinishedPointList = pointList.filter((item) => !item.status);
+  const unFinishedPointList = pointList.sort((a, b) => b.seque - a.seque).filter((item) => !item.status);
 
   const taskList = [];
   // 获取未完成任务列表
